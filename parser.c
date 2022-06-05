@@ -126,8 +126,10 @@ JsonNumber *parseNumber(parser *p)
     size_t count = 0;
     size_t pos = p->pos;
 
-    if (p->text[pos] == '+' || p->text[pos] == '-')
+    int flag_has_sign = 0;
+    if (p->text[pos] == '-')
     {
+        flag_has_sign = 1;
         count++;
         pos++;
     }
@@ -144,6 +146,16 @@ JsonNumber *parseNumber(parser *p)
         {
             break;
         }
+    }
+    if (count == 0)
+    {
+        return NULL;
+    }
+    if (count == 1 && flag_has_sign)
+    {
+        p->pos = pos;
+        p->error = PERR_NUM_EXPECTED_DIGIT;
+        return NULL;
     }
     size_t count_after_dot = 0;
     if (p->text[pos] == '.')
@@ -165,10 +177,12 @@ JsonNumber *parseNumber(parser *p)
             }
         }
         if (count_after_dot == 0)
+        {
+            p->pos = pos;
+            p->error = PERR_NUM_EXPECTED_DIGIT;
             return NULL;
+        }
     }
-    if (count == 0)
-        return NULL;
     JsonNumber *result = (JsonNumber *)malloc(sizeof(JsonNumber));
     result->val = (char *)malloc(count + 1);
     for (size_t i = 0; i < count; i++)
@@ -189,17 +203,26 @@ JsonString *parseString(parser *p)
 
     size_t count = 0;
     size_t pos = p->pos + 1;
+    int success = 0;
     while (pos < p->length)
     {
         char c = p->text[pos];
         if (c == '"' && p->text[pos - 1] != '\\')
         {
+            success = 1;
             pos++;
             break;
         }
         count++;
         pos++;
     }
+
+    if (!success)
+    {
+        p->error = PERR_STRING_NO_END;
+        return NULL;
+    }
+
     JsonString *result = (JsonString *)malloc(sizeof(JsonString));
     result->val = (char *)malloc(count + 1);
     p->pos++;
@@ -269,7 +292,10 @@ JsonValue *parseJson(parser *p)
         result->val = obj;
         return result;
     }
-
+    if (p->error == PERR_NO_ERROR)
+    {
+        p->error = PERR_UNKNOWN_VALUE;
+    }
     return NULL;
 }
 
@@ -301,7 +327,6 @@ JsonArray *parseArray(parser *p)
     if ((val = parseJson(p)) == NULL)
     {
         // err
-        p->pos = prevPos;
         return NULL;
     }
     values[valuesCount] = val;
@@ -328,7 +353,7 @@ JsonArray *parseArray(parser *p)
         if (p->text[p->pos] != ',')
         {
             // err
-            p->pos = prevPos;
+            p->error = PERR_ARRAY_EXPECTED_COMMA;
             return NULL;
         }
         p->pos++;
@@ -337,7 +362,6 @@ JsonArray *parseArray(parser *p)
         if ((val = parseJson(p)) == NULL)
         {
             // err
-            p->pos = prevPos;
             return NULL;
         }
         values[valuesCount] = val;
@@ -345,25 +369,24 @@ JsonArray *parseArray(parser *p)
     }
     // free stuff
     p->pos = prevPos;
+    p->error = PERR_ARRAY_NO_END;
     return NULL;
 }
 
 JsonObjectEntry *parseObjectEntry(parser *p)
 {
-    size_t prevPos = p->pos;
     JsonString *key;
     JsonValue *val;
 
     if ((key = parseString(p)) == NULL)
     {
-        p->pos = prevPos;
         return NULL;
     }
 
     parseWhiteSpace(p);
     if (p->text[p->pos] != ':')
     {
-        p->pos = prevPos;
+        p->error = PERR_OBJECT_EXPECETD_COLON;
         return NULL;
     }
     p->pos++;
@@ -371,7 +394,6 @@ JsonObjectEntry *parseObjectEntry(parser *p)
 
     if ((val = parseJson(p)) == NULL)
     {
-        p->pos = prevPos;
         return NULL;
     }
 
@@ -409,7 +431,6 @@ JsonObject *parseObject(parser *p)
     if ((val = parseObjectEntry(p)) == NULL)
     {
         // err
-        p->pos = prevPos;
         return NULL;
     }
     values[valuesCount] = val;
@@ -436,7 +457,7 @@ JsonObject *parseObject(parser *p)
         if (p->text[p->pos] != ',')
         {
             // err
-            p->pos = prevPos;
+            p->error = PERR_OBJECT_EXPECTED_COMMA;
             return NULL;
         }
         p->pos++;
@@ -445,7 +466,6 @@ JsonObject *parseObject(parser *p)
         if ((val = parseObjectEntry(p)) == NULL)
         {
             // err
-            p->pos = prevPos;
             return NULL;
         }
         values[valuesCount] = val;
@@ -453,5 +473,86 @@ JsonObject *parseObject(parser *p)
     }
     // free stuff
     p->pos = prevPos;
+    p->error = PERR_OBJECT_NO_END;
     return NULL;
+}
+
+void initParser(parser *p, char *str)
+{
+    p->error = 0;
+    p->text = str;
+    p->length = strlen(str);
+    p->pos = 0;
+}
+
+char *parserErrMessages[] = {
+    "No error",
+    "Json Object did not end, expected '}'",
+    "Json Object expected ',' before",
+    "Json Object entry expected ':' before",
+    "Json Array did not end, expected ']'",
+    "Json Array expected ','",
+    "Json String did not end, expected '\"'",
+    "Json Unknown value",
+    "Json Number expected digit '[0-9]'"};
+
+void printParseError(parser *p)
+{
+    char buff[60];
+    printf("ERROR: \t%s\n", parserErrMessages[p->error]);
+    if (p->error == PERR_NO_ERROR)
+        return;
+
+    size_t line = 1, col = 1;
+    for (size_t i = 0; i < p->pos; i++)
+    {
+        char c = p->text[i];
+        if (c == '\n')
+        {
+            line++;
+            col = 1;
+            continue;
+        }
+        col++;
+    }
+
+    printf("\tat line %lu, col %lu\n", line, col);
+    size_t indent = 0;
+    if (col < 55)
+    {
+        strncpy(buff, p->text + p->pos - col, 60);
+        indent = col;
+    }
+    else
+    {
+        strncpy(buff, p->text + p->pos - 5, 60);
+        indent = 5;
+    }
+    printf("\t");
+    size_t count = strlen(buff);
+    for (size_t i = 0; i < count; i++)
+    {
+        char c = buff[i];
+        switch (c)
+        {
+        case '\n':
+            printf("\\n");
+            break;
+        case '\r':
+            printf("\\r");
+            break;
+        case '\t':
+            printf("\\t");
+            break;
+        default:
+            printf("%c", c);
+            break;
+        }
+    }
+    printf("\n\t");
+    for (size_t i = 0; i < indent; i++)
+    {
+        printf(" ");
+    }
+    printf("^\n");
 }

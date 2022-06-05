@@ -8,7 +8,7 @@ JsonValue =
 
 JsonNull = "null"
 JsonBool = "true" | "false"
-JsonNumber = [+|-]?[0-9]*[.]?[0-9]+
+JsonNumber = [-]?[0-9]*[.]?[0-9]+
 JsonString = "\" STR "\""
 
 JsonArray = "[" WS* "]" | "[" (WS* JsonValue WS*,)* (WS* JsonValue WS*) "]"

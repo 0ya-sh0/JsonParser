@@ -19,9 +19,13 @@ int main(int argc, char const *argv[])
     fclose(f);
 
     string[fsize] = 0;
-    parser p = {.text = string, .length = strlen(string), .pos = 0};
+    parser p;
+    initParser(&p, string);
 
     JsonValue *value = parseJson(&p);
-    printJsonValue(value, 0);
+    if (value == NULL)
+        printParseError(&p);
+    else
+        printJsonValue(value, 0);
     return 0;
 }

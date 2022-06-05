@@ -136,13 +136,6 @@ void testNumber()
     r = parseNumber(&p);
     test(r != NULL && p.pos == 4 && strcmp("1234", r->val) == 0);
 
-    buff = "+234abcd";
-    p.text = buff;
-    p.pos = 0;
-    p.length = strlen(buff);
-    r = parseNumber(&p);
-    test(r != NULL && p.pos == 4 && strcmp("+234", r->val) == 0);
-
     buff = "-234abcd";
     p.text = buff;
     p.pos = 0;
@@ -157,40 +150,12 @@ void testNumber()
     r = parseNumber(&p);
     test(r != NULL && p.pos == 7 && strcmp("1234.67", r->val) == 0);
 
-    buff = "+234.67abcd";
-    p.text = buff;
-    p.pos = 0;
-    p.length = strlen(buff);
-    r = parseNumber(&p);
-    test(r != NULL && p.pos == 7 && strcmp("+234.67", r->val) == 0);
-
     buff = "-234.67abcd";
     p.text = buff;
     p.pos = 0;
     p.length = strlen(buff);
     r = parseNumber(&p);
     test(r != NULL && p.pos == 7 && strcmp("-234.67", r->val) == 0);
-
-    buff = ".23abcd";
-    p.text = buff;
-    p.pos = 0;
-    p.length = strlen(buff);
-    r = parseNumber(&p);
-    test(r != NULL && p.pos == 3 && strcmp(".23", r->val) == 0);
-
-    buff = "-.34abcd";
-    p.text = buff;
-    p.pos = 0;
-    p.length = strlen(buff);
-    r = parseNumber(&p);
-    test(r != NULL && p.pos == 4 && strcmp("-.34", r->val) == 0);
-
-    buff = "+.34abcd";
-    p.text = buff;
-    p.pos = 0;
-    p.length = strlen(buff);
-    r = parseNumber(&p);
-    test(r != NULL && p.pos == 4 && strcmp("+.34", r->val) == 0);
 }
 
 void testString()

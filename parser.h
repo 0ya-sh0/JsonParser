@@ -1,3 +1,6 @@
+#ifndef PARSER_H_
+#define PARSER_H_
+
 #include <stdlib.h>
 
 // struct parser;
@@ -25,6 +28,7 @@ typedef struct parser
     char *text;
     size_t length;
     size_t pos;
+    int error;
 } parser;
 
 typedef struct JsonString
@@ -67,7 +71,6 @@ typedef struct JsonNumber
 } JsonNumber;
 
 void printParser(const parser *p);
-
 void parseWhiteSpace(parser *p);
 int parseNull(parser *p);
 JsonBool *parseBool(parser *p);
@@ -79,3 +82,18 @@ JsonObjectEntry *parseObjectEntry(parser *p);
 JsonValue *parseJson(parser *p);
 void printIndent(size_t count);
 void printJsonValue(const JsonValue *value, size_t indent);
+void printParseError(parser *p);
+void initParser(parser *p, char *str);
+
+#define PERR_NO_ERROR 0
+#define PERR_OBJECT_NO_END 1
+#define PERR_OBJECT_EXPECTED_COMMA 2
+#define PERR_OBJECT_EXPECETD_COLON 3
+#define PERR_ARRAY_NO_END 4
+#define PERR_ARRAY_EXPECTED_COMMA 5
+#define PERR_STRING_NO_END 6
+#define PERR_UNKNOWN_VALUE 7
+#define PERR_NUM_EXPECTED_DIGIT 8
+
+extern char *parserErrMessages[];
+#endif
