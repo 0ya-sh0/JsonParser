@@ -1,6 +1,7 @@
 CC = gcc
 CFLAGS = -g -Wall -Werror
 
+all: clean demo test
 
 demo: demo.o parser.o
 	$(CC) $(CFLAGS) ./obj/demo.o ./obj/parser.o -o ./bin/demo
@@ -20,4 +21,3 @@ demo.o: demo.c
 clean: 
 	rm -rf ./obj ./bin
 	mkdir obj bin
-
