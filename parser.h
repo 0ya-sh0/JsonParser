@@ -63,7 +63,7 @@ typedef struct JsonBool
 
 typedef struct JsonNumber
 {
-    unsigned int val;
+    char *val;
 } JsonNumber;
 
 void printParser(const parser *p);

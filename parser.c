@@ -39,7 +39,7 @@ void printJsonValue(const JsonValue *value, size_t indent)
 
     case VALUE_NUMBER:
         printIndent(indent);
-        printf("(NUMBER: %u)", ((JsonNumber *)value->val)->val);
+        printf("(NUMBER: %s)", ((JsonNumber *)value->val)->val);
         return;
 
     case VALUE_STRING:
@@ -125,6 +125,13 @@ JsonNumber *parseNumber(parser *p)
 {
     size_t count = 0;
     size_t pos = p->pos;
+
+    if (p->text[pos] == '+' || p->text[pos] == '-')
+    {
+        count++;
+        pos++;
+    }
+
     while (pos < p->length)
     {
         char c = p->text[pos];
@@ -138,16 +145,38 @@ JsonNumber *parseNumber(parser *p)
             break;
         }
     }
+    size_t count_after_dot = 0;
+    if (p->text[pos] == '.')
+    {
+        count++;
+        pos++;
+        while (pos < p->length)
+        {
+            char c = p->text[pos];
+            if (c >= '0' && c <= '9')
+            {
+                count++;
+                pos++;
+                count_after_dot++;
+            }
+            else
+            {
+                break;
+            }
+        }
+        if (count_after_dot == 0)
+            return NULL;
+    }
     if (count == 0)
         return NULL;
     JsonNumber *result = (JsonNumber *)malloc(sizeof(JsonNumber));
-    result->val = 0;
-    while (p->pos < pos)
+    result->val = (char *)malloc(count + 1);
+    for (size_t i = 0; i < count; i++)
     {
-        result->val *= 10;
-        result->val += p->text[p->pos] - '0';
+        result->val[i] = p->text[p->pos];
         p->pos++;
     }
+    result->val[count] = '\0';
     return result;
 }
 

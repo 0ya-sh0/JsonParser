@@ -120,20 +120,77 @@ void testNumber()
     printf("Test Number\n");
     JsonNumber *r;
     parser p;
+    char *buff;
 
-    char *buff1 = "abcd";
-    p.text = buff1;
+    buff = "abcd";
+    p.text = buff;
     p.pos = 0;
-    p.length = strlen(buff1);
+    p.length = strlen(buff);
     r = parseNumber(&p);
     test(r == NULL && p.pos == 0);
 
-    char *buff2 = "1234abcd";
-    p.text = buff2;
+    buff = "1234abcd";
+    p.text = buff;
     p.pos = 0;
-    p.length = strlen(buff2);
+    p.length = strlen(buff);
     r = parseNumber(&p);
-    test(r != NULL && p.pos == 4 && r->val == 1234);
+    test(r != NULL && p.pos == 4 && strcmp("1234", r->val) == 0);
+
+    buff = "+234abcd";
+    p.text = buff;
+    p.pos = 0;
+    p.length = strlen(buff);
+    r = parseNumber(&p);
+    test(r != NULL && p.pos == 4 && strcmp("+234", r->val) == 0);
+
+    buff = "-234abcd";
+    p.text = buff;
+    p.pos = 0;
+    p.length = strlen(buff);
+    r = parseNumber(&p);
+    test(r != NULL && p.pos == 4 && strcmp("-234", r->val) == 0);
+
+    buff = "1234.67abcd";
+    p.text = buff;
+    p.pos = 0;
+    p.length = strlen(buff);
+    r = parseNumber(&p);
+    test(r != NULL && p.pos == 7 && strcmp("1234.67", r->val) == 0);
+
+    buff = "+234.67abcd";
+    p.text = buff;
+    p.pos = 0;
+    p.length = strlen(buff);
+    r = parseNumber(&p);
+    test(r != NULL && p.pos == 7 && strcmp("+234.67", r->val) == 0);
+
+    buff = "-234.67abcd";
+    p.text = buff;
+    p.pos = 0;
+    p.length = strlen(buff);
+    r = parseNumber(&p);
+    test(r != NULL && p.pos == 7 && strcmp("-234.67", r->val) == 0);
+
+    buff = ".23abcd";
+    p.text = buff;
+    p.pos = 0;
+    p.length = strlen(buff);
+    r = parseNumber(&p);
+    test(r != NULL && p.pos == 3 && strcmp(".23", r->val) == 0);
+
+    buff = "-.34abcd";
+    p.text = buff;
+    p.pos = 0;
+    p.length = strlen(buff);
+    r = parseNumber(&p);
+    test(r != NULL && p.pos == 4 && strcmp("-.34", r->val) == 0);
+
+    buff = "+.34abcd";
+    p.text = buff;
+    p.pos = 0;
+    p.length = strlen(buff);
+    r = parseNumber(&p);
+    test(r != NULL && p.pos == 4 && strcmp("+.34", r->val) == 0);
 }
 
 void testString()
