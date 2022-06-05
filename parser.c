@@ -163,16 +163,13 @@ JsonString *parseString(parser *p)
     while (pos < p->length)
     {
         char c = p->text[pos];
-        if (c == '"')
+        if (c == '"' && p->text[pos - 1] != '\\')
         {
             pos++;
             break;
         }
-        if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
-        {
-            count++;
-            pos++;
-        }
+        count++;
+        pos++;
     }
     JsonString *result = (JsonString *)malloc(sizeof(JsonString));
     result->val = (char *)malloc(count + 1);
