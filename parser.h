@@ -85,6 +85,14 @@ void printJsonValue(const JsonValue *value, size_t indent);
 void printParseError(parser *p);
 void initParser(parser *p, char *str);
 
+void freeJsonString(JsonString *value);
+void freeJsonBool(JsonBool *value);
+void freeJsonNumber(JsonNumber *value);
+void freeJsonArray(JsonArray *value);
+void freeJsonObject(JsonObject *value);
+void freeJsonObjectEntry(JsonObjectEntry *value);
+void freeJsonValue(JsonValue *value);
+
 #define PERR_NO_ERROR 0
 #define PERR_OBJECT_NO_END 1
 #define PERR_OBJECT_EXPECTED_COMMA 2

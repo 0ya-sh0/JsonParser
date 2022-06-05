@@ -37,8 +37,11 @@ int main(int argc, char const *argv[])
 
     JsonValue *value = parseJson(&p);
     if (value == NULL)
+    {
         printParseError(&p);
-    else
-        printJsonValue(value, 0);
+        return 0;
+    }
+    printJsonValue(value, 0);
+    freeJsonValue(value);
     return 0;
 }

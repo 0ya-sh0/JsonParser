@@ -352,7 +352,10 @@ JsonArray *parseArray(parser *p)
 
         if (p->text[p->pos] != ',')
         {
-            // err
+            for (size_t i = 0; i < valuesCount; i++)
+            {
+                freeJsonValue(values[i]);
+            }
             p->error = PERR_ARRAY_EXPECTED_COMMA;
             return NULL;
         }
@@ -361,13 +364,19 @@ JsonArray *parseArray(parser *p)
 
         if ((val = parseJson(p)) == NULL)
         {
-            // err
+            for (size_t i = 0; i < valuesCount; i++)
+            {
+                freeJsonValue(values[i]);
+            }
             return NULL;
         }
         values[valuesCount] = val;
         valuesCount++;
     }
-    // free stuff
+    for (size_t i = 0; i < valuesCount; i++)
+    {
+        freeJsonValue(values[i]);
+    }
     p->pos = prevPos;
     p->error = PERR_ARRAY_NO_END;
     return NULL;
@@ -386,6 +395,7 @@ JsonObjectEntry *parseObjectEntry(parser *p)
     parseWhiteSpace(p);
     if (p->text[p->pos] != ':')
     {
+        freeJsonString(key);
         p->error = PERR_OBJECT_EXPECETD_COLON;
         return NULL;
     }
@@ -394,6 +404,7 @@ JsonObjectEntry *parseObjectEntry(parser *p)
 
     if ((val = parseJson(p)) == NULL)
     {
+        freeJsonString(key);
         return NULL;
     }
 
@@ -456,7 +467,10 @@ JsonObject *parseObject(parser *p)
 
         if (p->text[p->pos] != ',')
         {
-            // err
+            for (size_t i = 0; i < valuesCount; i++)
+            {
+                freeJsonObjectEntry(values[i]);
+            }
             p->error = PERR_OBJECT_EXPECTED_COMMA;
             return NULL;
         }
@@ -465,13 +479,19 @@ JsonObject *parseObject(parser *p)
 
         if ((val = parseObjectEntry(p)) == NULL)
         {
-            // err
+            for (size_t i = 0; i < valuesCount; i++)
+            {
+                freeJsonObjectEntry(values[i]);
+            }
             return NULL;
         }
         values[valuesCount] = val;
         valuesCount++;
     }
-    // free stuff
+    for (size_t i = 0; i < valuesCount; i++)
+    {
+        freeJsonObjectEntry(values[i]);
+    }
     p->pos = prevPos;
     p->error = PERR_OBJECT_NO_END;
     return NULL;
@@ -555,4 +575,74 @@ void printParseError(parser *p)
         printf(" ");
     }
     printf("^\n");
+}
+
+void freeJsonString(JsonString *value)
+{
+    free(value->val);
+    free(value);
+}
+
+void freeJsonBool(JsonBool *value)
+{
+    free(value);
+}
+
+void freeJsonNumber(JsonNumber *value)
+{
+    free(value->val);
+    free(value);
+}
+
+void freeJsonArray(JsonArray *value)
+{
+    for (size_t i = 0; i < value->length; i++)
+    {
+        freeJsonValue(value->val[i]);
+    }
+    free(value->val);
+    free(value);
+}
+
+void freeJsonObject(JsonObject *value)
+{
+
+    for (size_t i = 0; i < value->length; i++)
+    {
+        freeJsonObjectEntry(value->val[i]);
+    }
+    free(value->val);
+    free(value);
+}
+
+void freeJsonObjectEntry(JsonObjectEntry *value)
+{
+    free(value->key);
+    free(value->val);
+    free(value);
+}
+
+void freeJsonValue(JsonValue *value)
+{
+    switch (value->type)
+    {
+    case VALUE_NULL:
+        break;
+    case VALUE_BOOL:
+        freeJsonBool((JsonBool *)value->val);
+        break;
+    case VALUE_NUMBER:
+        freeJsonNumber((JsonNumber *)value->val);
+        break;
+    case VALUE_STRING:
+        freeJsonString((JsonString *)value->val);
+        break;
+    case VALUE_OBJECT:
+        freeJsonObject((JsonObject *)value->val);
+        break;
+    case VALUE_ARRAY:
+        freeJsonArray((JsonArray *)value->val);
+        break;
+    }
+    free(value);
 }
