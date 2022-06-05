@@ -1,0 +1,21 @@
+JsonValue = 
+    JsonNull
+    | JsonBool
+    | JsonNumber
+    | JsonString
+    | JsonObject
+    | JsonArray
+
+JsonNull = "null"
+JsonBool = "true" | "false"
+JsonNumber = [0-9]+
+JsonString = "\"" [a-zA-Z0-9]* "\""
+
+JsonArray = "[" WS* "]" | "[" (WS* JsonValue WS*,)* (WS* JsonValue WS*) "]"
+
+JsonObject = "{" WS* "}" | "{" (WS* JsonObjectEntry WS*,)* (WS* JsonObjectEntry WS*) "}"
+
+JsonObjectEntry = JsonString WS* ":" WS* JsonValue
+
+
+WS = ' ' | '\n' | '\t' | '\r'

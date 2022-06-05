@@ -1,0 +1,20 @@
+{
+    "name": "foobarbaz",
+    "dob": "11223344",
+    "age": 43,
+    "isSingle": true,
+    "isEmployed": false,
+    "house": null,
+    "hobbies": [
+        true,
+        false,
+        1234,
+        "str",
+        {
+            "key": "val"
+        }
+    ],
+    "age1": 45,
+    "isSingle1": true,
+    "isEmployed1": false
+}
