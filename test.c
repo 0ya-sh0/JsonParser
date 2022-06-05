@@ -176,28 +176,28 @@ void testArray()
     p.pos = 0;
     p.length = strlen(buff);
     r = parseArray(&p);
-    test(r != NULL && p.pos == 2 && r->length == 0);
+    test(r != NULL && p.pos == p.length && r->length == 0);
 
     buff = "[    ]";
     p.text = buff;
     p.pos = 0;
     p.length = strlen(buff);
     r = parseArray(&p);
-    test(r != NULL && p.pos == 6 && r->length == 0);
+    test(r != NULL && p.pos == p.length && r->length == 0);
 
     buff = "[ 1234 ]";
     p.text = buff;
     p.pos = 0;
     p.length = strlen(buff);
     r = parseArray(&p);
-    test(r != NULL && p.pos == 8 && r->length == 1 && r->val[0]->type == VALUE_NUMBER);
+    test(r != NULL && p.pos == p.length && r->length == 1 && r->val[0]->type == VALUE_NUMBER);
 
     buff = "[ 1234  , \"abcd\" ]";
     p.text = buff;
     p.pos = 0;
     p.length = strlen(buff);
     r = parseArray(&p);
-    test(r != NULL && p.pos == 18 && r->length == 2 && r->val[0]->type == VALUE_NUMBER && r->val[1]->type == VALUE_STRING);
+    test(r != NULL && p.pos == p.length && r->length == 2 && r->val[0]->type == VALUE_NUMBER && r->val[1]->type == VALUE_STRING);
 
     buff = "[ 1234, 5677, true]";
     p.text = buff;
@@ -248,7 +248,7 @@ void testObject()
     p.pos = 0;
     p.length = strlen(buff);
     r = parseObject(&p);
-    test(r != NULL && p.pos == 2 && r->length == 0);
+    test(r != NULL && p.pos == p.length && r->length == 0);
 
     buff = "{   }";
     p.text = buff;
@@ -284,42 +284,42 @@ void testValue()
     p.pos = 0;
     p.length = strlen(buff);
     r = parseJson(&p);
-    test(r != NULL && p.pos == 4 && r->type == VALUE_NULL);
+    test(r != NULL && p.pos == p.length && r->type == VALUE_NULL);
 
     buff = "123466";
     p.text = buff;
     p.pos = 0;
     p.length = strlen(buff);
     r = parseJson(&p);
-    test(r != NULL && p.pos == 6 && r->type == VALUE_NUMBER);
+    test(r != NULL && p.pos == p.length && r->type == VALUE_NUMBER);
 
     buff = "\"foobarbaz\"";
     p.text = buff;
     p.pos = 0;
     p.length = strlen(buff);
     r = parseJson(&p);
-    test(r != NULL && p.pos == 12 && r->type == VALUE_STRING);
+    test(r != NULL && p.pos == p.length && r->type == VALUE_STRING);
 
     buff = "true";
     p.text = buff;
     p.pos = 0;
     p.length = strlen(buff);
     r = parseJson(&p);
-    test(r != NULL && p.pos == 4 && r->type == VALUE_BOOL);
+    test(r != NULL && p.pos == p.length && r->type == VALUE_BOOL);
 
     buff = "false";
     p.text = buff;
     p.pos = 0;
     p.length = strlen(buff);
     r = parseJson(&p);
-    test(r != NULL && p.pos == 5 && r->type == VALUE_BOOL);
+    test(r != NULL && p.pos == p.length && r->type == VALUE_BOOL);
 
     buff = "[ 1234  , \"foobarbaz\" ]";
     p.text = buff;
     p.pos = 0;
     p.length = strlen(buff);
     r = parseJson(&p);
-    test(r != NULL && p.pos == 18 && r->type == VALUE_ARRAY);
+    test(r != NULL && p.pos == p.length && r->type == VALUE_ARRAY);
 
     buff = "{  \"name\" : \"foobarbaz\", \"hobbies\" : [1234]  }";
     p.text = buff;
