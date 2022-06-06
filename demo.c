@@ -13,7 +13,7 @@ int main(int argc, char const *argv[])
 
     if (!f)
     {
-        perror("fopen:");
+        perror("fopen");
         exit(0);
     }
 
@@ -25,7 +25,7 @@ int main(int argc, char const *argv[])
 
     if (!string)
     {
-        perror("malloc:");
+        perror("malloc");
         exit(0);
     }
     fread(string, fsize, 1, f);
@@ -33,15 +33,19 @@ int main(int argc, char const *argv[])
 
     string[fsize] = 0;
     parser p;
-    initParser(&p, string);
 
+    initParser(&p, string);
     JsonValue *value = parseJson(&p);
     if (value == NULL)
     {
         printParseError(&p);
-        return 0;
     }
-    printJsonValue(value, 0);
-    freeJsonValue(value);
+    else
+    {
+        printJsonValue(value, 0);
+        freeJsonValue(value);
+    }
+
+    free(string);
     return 0;
 }
