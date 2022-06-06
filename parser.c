@@ -617,8 +617,8 @@ void freeJsonObject(JsonObject *value)
 
 void freeJsonObjectEntry(JsonObjectEntry *value)
 {
-    free(value->key);
-    free(value->val);
+    freeJsonString(value->key);
+    freeJsonValue(value->val);
     free(value);
 }
 
