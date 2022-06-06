@@ -376,8 +376,8 @@ JsonArray *parseArray(parser *p)
         }
         if (valuesCount >= valuesCap)
         {
-            values = realloc(values, valuesCap + 1024);
             valuesCap += 1024;
+            values = realloc(values, valuesCap * sizeof(JsonValue *));
         }
         values[valuesCount] = val;
         valuesCount++;
@@ -426,8 +426,6 @@ JsonObjectEntry *parseObjectEntry(parser *p)
 
 JsonObject *parseObject(parser *p)
 {
-    JsonObjectEntry *values[1024], *val;
-    size_t valuesCount = 0;
     size_t prevPos = p->pos;
 
     if (p->text[p->pos] != '{')
@@ -449,11 +447,14 @@ JsonObject *parseObject(parser *p)
         return result;
     }
 
+    JsonObjectEntry **values, *val;
     if ((val = parseObjectEntry(p)) == NULL)
     {
         // err
         return NULL;
     }
+    size_t valuesCount = 0, valuesCap = 1024;
+    values = (JsonObjectEntry **)calloc(valuesCap, sizeof(JsonObjectEntry *));
     values[valuesCount] = val;
     valuesCount++;
 
@@ -472,6 +473,7 @@ JsonObject *parseObject(parser *p)
             {
                 result->val[i] = values[i];
             }
+            free(values);
             return result;
         }
 
@@ -481,6 +483,7 @@ JsonObject *parseObject(parser *p)
             {
                 freeJsonObjectEntry(values[i]);
             }
+            free(values);
             p->error = PERR_OBJECT_EXPECTED_COMMA;
             return NULL;
         }
@@ -493,7 +496,13 @@ JsonObject *parseObject(parser *p)
             {
                 freeJsonObjectEntry(values[i]);
             }
+            free(values);
             return NULL;
+        }
+        if (valuesCount >= valuesCap)
+        {
+            valuesCap += 1024;
+            values = realloc(values, valuesCap * sizeof(JsonObjectEntry *));
         }
         values[valuesCount] = val;
         valuesCount++;
@@ -502,6 +511,7 @@ JsonObject *parseObject(parser *p)
     {
         freeJsonObjectEntry(values[i]);
     }
+    free(values);
     p->pos = prevPos;
     p->error = PERR_OBJECT_NO_END;
     return NULL;
