@@ -301,8 +301,6 @@ JsonValue *parseJson(parser *p)
 
 JsonArray *parseArray(parser *p)
 {
-    JsonValue *values[1024], *val;
-    size_t valuesCount = 0;
     size_t prevPos = p->pos;
 
     if (p->text[p->pos] != '[')
@@ -324,11 +322,14 @@ JsonArray *parseArray(parser *p)
         return result;
     }
 
+    JsonValue **values, *val;
     if ((val = parseJson(p)) == NULL)
     {
         // err
         return NULL;
     }
+    size_t valuesCount = 0, valuesCap = 1024;
+    values = (JsonValue **)calloc(valuesCap, sizeof(JsonValue *));
     values[valuesCount] = val;
     valuesCount++;
 
@@ -347,6 +348,7 @@ JsonArray *parseArray(parser *p)
             {
                 result->val[i] = values[i];
             }
+            free(values);
             return result;
         }
 
@@ -356,6 +358,7 @@ JsonArray *parseArray(parser *p)
             {
                 freeJsonValue(values[i]);
             }
+            free(values);
             p->error = PERR_ARRAY_EXPECTED_COMMA;
             return NULL;
         }
@@ -368,7 +371,13 @@ JsonArray *parseArray(parser *p)
             {
                 freeJsonValue(values[i]);
             }
+            free(values);
             return NULL;
+        }
+        if (valuesCount >= valuesCap)
+        {
+            values = realloc(values, valuesCap + 1024);
+            valuesCap += 1024;
         }
         values[valuesCount] = val;
         valuesCount++;
@@ -377,6 +386,7 @@ JsonArray *parseArray(parser *p)
     {
         freeJsonValue(values[i]);
     }
+    free(values);
     p->pos = prevPos;
     p->error = PERR_ARRAY_NO_END;
     return NULL;
